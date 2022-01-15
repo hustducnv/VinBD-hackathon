@@ -1,82 +1,12 @@
-import re
-import numpy as np
-from underthesea import word_tokenize
 from shorten import shorten
-
-def clean_text(text):
-    out = re.sub(r'https?:\/\/\S*\s', ' ', text)
-    out = re.sub(r"\.\.\.",' ',out)
-    out = re.sub(r",",' , ',out)
-    out = re.sub(r"\.",' \. ',out)
-    out = re.sub(r"!",' ! ',out)
-    out = re.sub(r"\?",' \? ',out)
-    out = re.sub(r"\%",' \% ',out)
-    out = re.sub(r"[^aAàÀảẢãÃáÁạẠăĂằẰẳẲẵẴắẮặẶâÂầẦẩẨẫẪấẤậẬbBcCdDđĐeEèÈẻẺẽẼéÉẹẸêÊềỀểỂễỄếẾệỆfFgGhHiIìÌỉỈĩĨíÍịỊjJk\
-    KlLmMnNoOòÒỏỎõÕóÓọỌôÔồỒổỔỗỖốỐộỘơƠờỜởỞỡỠớỚợỢpPqQrRsStTuUùÙủỦũŨúÚụỤưƯừỪửỬữỮứỨựỰvVwWxXyYỳỲỷỶỹỸýÝỵỴzZ0-9,\.!\?\%\s]", " ", out)
-
-    #out = ' '.join(s for s in out.split() if not any(c.isdigit() for c in s))
-    out = re.sub(r"[\s]+",' ',out)
-    return out.strip()
-
-# RULE BASED:
-rule = {
-    'luôn' : (0.6, ['lun', 'luông luông', 'lun lun']),
-    'luôn luôn' : (0.6, ['lun lun', 'luông luông']),
-    'tốt nhất' : (0.9, ['xịn xò nhất']),
-    'được' : (0.4, ['đượt']),
-    'nhưng mà' : (0.9, ['cơ mà']),
-    'tuy nhiên' : (0.6, ['cơ mà']),
-    'bị' : (0.5, ['pị']), 
-    'phải' : (0.3, ['fải']),
-}
-
-rule_pronoun = {
-    'tôi' : ['tớ', 'mình', 'tui', 'bần tăng', 'tui', 'tôy'],
-    'chúng tôi' : ['tớ', 'mình', 'tui', 'bần tăng', 'tui', 'tôy'],
-    'bạn' : ['đồng chí', 'người anh em', 'pạn', 'thí chủ', 'bợn', 'bro'],
-}
-
-def changecase(w, islower):
-    if islower: return w
-    w = list(w)
-    w[0] = w[0].upper()
-    w = ''.join(w)
-    return w
-
-def genZ_transfer(text):
-    lines = [clean_text(t) for t in text.split('\n')]
-    lines = [t for t in lines if t != '']
-    # select a rule pronoun
-    idx = np.random.randint(0,len(list(rule_pronoun.values())[0]))
-    selected_rule = {w : rule_pronoun[w][idx] for w in rule_pronoun.keys()}
-    
-    newlines = []
-    for line in lines:
-        ws = word_tokenize(line)
-        ws_new = []
-        for w in ws:
-            islower = w.islower()
-            w = w.lower()
-            if w in selected_rule.keys():
-                ws_new.append(changecase(selected_rule[w],islower))
-                continue
-            try:
-                p, wlist = rule[w]
-            except:
-                ws_new.append(changecase(w,islower))
-                continue
-            if np.random.rand() < p:
-                ws_new.append(changecase(np.random.choice(wlist), islower))
-            else:
-                ws_new.append(changecase(w,islower))
-
-        newlines.append(' '.join(ws_new))
-    return '\n'.join(newlines)
-    
+from detail import get_detail
+from genz import genZ_transfer
+import time
 
 
-if __name__ == '__main__':
-    src = '''Nền tảng khoa học
+n_runs = 20
+
+src = '''Nền tảng khoa học
 Thalassemia là một trong các bất thường di truyền theo kiểu lặn phổ biến nhất trên thế giới. Hiện có 7% người dân trên toàn cầu mang gen bệnh tan máu bẩm sinh; 1,1% cặp vợ chồng có nguy cơ sinh con bị bệnh hoặc mang gen bệnh. Bệnh có tỷ lệ cao ở vùng Địa Trung Hải, Trung Đông, châu Á - Thái Bình Dương trong đó Việt Nam là một trong những nước có tỷ lệ mắc bệnh và mang gen bệnh cao. Tại Việt Nam, tỷ lệ mang gen bệnh ở người Kinh vào khoảng 2 - 4%, các dân tộc thiểu số sống ở miền núi, tỷ lệ này rất cao: Khoảng 22% đối với dân tộc Mường, và trên 40% ở dân tộc Êđê , Tày, Thái và Siêng. Có 2 loại Thalassemia chính là Alpha Thalassemia và Beta Thalassemia. Beta thalassemia được gây ra bởi các đột biến trên gen HBB. Gen này mã hóa một protein của hemoglobin, liên quan đến vận chuyển oxy. Sự thiếu hụt của hemoglobin dẫn đến tình trạng thiếu máu đặc trưng của bệnh lý.
 Beta-thalassemia có thể được phân thành ba kiểu thể chính:
 Thể nhẹ, trong đó chỉ có một gen bị ảnh hưởng và nó không có triệu chứng.
@@ -88,5 +18,19 @@ Lời khuyên từ chúng tôi
 Bạn có nguy cơ thấp mắc bệnh, tuy nhiên bạn phải luôn theo dõi, khi có bất kỳ biểu hiện bất thường đã được nêu ở trên, hãy liên hệ với bác sĩ để được chẩn đoán và tư vấn về dinh dưỡng, lối sống, điều trị.
 Bạn nên có một chế độ dinh dưỡng hợp lý để phát triển tốt nhất. Luôn theo dõi, khi có triệu chứng bất thường trong quá trình phát triển, hãy liên hệ với bác sĩ để được chẩn đoán và tư vấn. Không tự ý bắt đầu bất kỳ điều trị nào mà chưa hỏi ý kiến của bác sĩ.
 '''
-    short = shorten(src, 3)
-    print(genZ_transfer(short))
+
+start = time.time()
+for _ in range(n_runs):
+    shorten(src)
+print('shorten-time: ', (time.time() - start) / n_runs)
+
+start = time.time()
+for _ in range(n_runs):
+    genZ_transfer(src)
+print('genZ-time: ', (time.time() - start) / n_runs)
+
+
+start = time.time()
+for _ in range(n_runs):
+    get_detail(src)
+print('detail-time: ', (time.time() - start) / n_runs)
