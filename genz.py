@@ -48,8 +48,8 @@ rule_pronoun = {
     'bác sĩ' : ['bác sĩ','bác sĩ','pác sĩ','đại phu','bác sĩ','bác sĩ' ],
 }
 
-intro = ['Về cơ bản là như thí này nhá! ', 'Tóm cái lược lại thì: ', 'Nói như này cho vuông nhứ. ', 'Nói chung là dzư này nè: ',
- 'Thui tóm lại thì thế này nhé: ']
+intro = ['Về cơ bản là như thí này nhá ! ', 'Tóm cái lược lại thì : ', 'Nói như này cho vuông nhứ . ', 'Nói chung là dzư này nè : ',
+ 'Thui tóm lại thì thế này nhé : ']
 
 advice_suffix = ['nha', 'nhé', 'nhứ', 'nhe']
 advice_suffix_prob = 0.8
@@ -62,7 +62,7 @@ def changecase(w, islower):
     return w
 
 def detect_advice(ws):
-    if ('hãy' in ws) or ('nên' in ws) or ('phải' in ws):
+    if ('hãy' in ws) or ('nên' in ws) or ('phải' in ws) or ('cần' in ws):
         if 'bạn' in ws:
             return True
     return False
