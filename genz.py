@@ -1,6 +1,6 @@
 import re
 import numpy as np
-from underthesea import word_tokenize
+from underthesea import word_tokenize, sent_tokenize
 from shorten import shorten
 
 def clean_text(text):
@@ -12,7 +12,7 @@ def clean_text(text):
     out = re.sub(r"\?",' \? ',out)
     out = re.sub(r"\%",' \% ',out)
     out = re.sub(r"[^aAàÀảẢãÃáÁạẠăĂằẰẳẲẵẴắẮặẶâÂầẦẩẨẫẪấẤậẬbBcCdDđĐeEèÈẻẺẽẼéÉẹẸêÊềỀểỂễỄếẾệỆfFgGhHiIìÌỉỈĩĨíÍịỊjJk\
-    KlLmMnNoOòÒỏỎõÕóÓọỌôÔồỒổỔỗỖốỐộỘơƠờỜởỞỡỠớỚợỢpPqQrRsStTuUùÙủỦũŨúÚụỤưƯừỪửỬữỮứỨựỰvVwWxXyYỳỲỷỶỹỸýÝỵỴzZ0-9,\.!\?\%\s]", " ", out)
+    KlLmMnNoOòÒỏỎõÕóÓọỌôÔồỒổỔỗỖốỐộỘơƠờỜởỞỡỠớỚợỢpPqQrRsStTuUùÙủỦũŨúÚụỤưƯừỪửỬữỮứỨựỰvVwWxXyYỳỲỷỶỹỸýÝỵỴzZ0-9,\.!\?\%\s/()]", " ", out)
 
     #out = ' '.join(s for s in out.split() if not any(c.isdigit() for c in s))
     out = re.sub(r"[\s]+",' ',out)
@@ -25,19 +25,33 @@ rule = {
     'tốt nhất' : (0.9, ['xịn xò nhất']),
     'được' : (0.4, ['đượt']),
     'nhưng mà' : (0.9, ['cơ mà']),
-    'tuy nhiên' : (0.6, ['cơ mà']),
-    'bị' : (0.5, ['pị']), 
-    'phải' : (0.3, ['fải']),
+    'tuy nhiên' : (0.7, ['cơ mà']),
+    'bị' : (0.3, ['pị']), 
+    'phải' : (0.4, ['fải', 'pải']),
+    'hợp lý' : (0.5, ['okela']),
+    'nhiều' : (0.6, ['nhìu']),
+    'tuổi' : (0.6, ['tủi']),
+    'hơi' : (0.8, ['hơi pị']),
+    'nhé' : (0.85, ['nhứ', 'nhớ', 'nhá', 'nha', ]),
+    'như' : (0.85, ['dzư', 'dư']),
+    'thế' : (0.7, ['thí']),
+    'tinh thần' : (0.4, ['tâm thần ý lộn tinh thần']),
+    'bắt đầu' : (0.5, ['pắt đầu']),
+
 }
 
 rule_pronoun = {
-    'tôi' : ['tớ', 'mình', 'tui', 'bần tăng', 'tui', 'tôy'],
-    'chúng tôi' : ['tớ', 'mình', 'tui', 'bần tăng', 'tui', 'tôy'],
+    'tôi' : ['tớ', 'mình', 'tui', 'bần tăng', 'mần', 'tôy'],
+    'chúng tôi' : ['chúng tớ', 'chúng mình', 'chúng tui', 'bần tăng', 'chúng mần', 'chúng tôy'],
     'bạn' : ['đồng chí', 'người anh em', 'pạn', 'thí chủ', 'bợn', 'bro'],
+    'bác sĩ' : ['bác sĩ','bác sĩ','pác sĩ','đại phu','bác sĩ','bác sĩ' ],
 }
 
+intro = ['Về cơ bản là như thí này nhá! ', 'Tóm cái lược lại thì: ', 'Nói như này cho vuông nhứ. ', 'Nói chung là dzư này nè: ',
+ 'Thui tóm lại thì thế này nhé: ']
+
 def changecase(w, islower):
-    if islower: return w
+    if islower: return w.lower()
     w = list(w)
     w[0] = w[0].upper()
     w = ''.join(w)
@@ -52,13 +66,15 @@ def genZ_transfer(text):
     
     newlines = []
     for line in lines:
-        ws = word_tokenize(line)
+        sents = sent_tokenize(line)
+        ws = []
+        for s in sents: ws.extend(word_tokenize(s))
         ws_new = []
         for w in ws:
             islower = w.islower()
             w = w.lower()
             if w in selected_rule.keys():
-                ws_new.append(changecase(selected_rule[w],islower))
+                ws_new.append(changecase(selected_rule[w] ,islower))
                 continue
             try:
                 p, wlist = rule[w]
@@ -68,10 +84,11 @@ def genZ_transfer(text):
             if np.random.rand() < p:
                 ws_new.append(changecase(np.random.choice(wlist), islower))
             else:
-                ws_new.append(changecase(w,islower))
+                ws_new.append(changecase(w, islower))
 
         newlines.append(' '.join(ws_new))
-    return '\n'.join(newlines)
+    intro_lines = np.random.choice(intro) if 'bro' not in selected_rule.values() else 'Hey bruh, '
+    return np.random.choice(intro) + '\n'.join(newlines)
     
 
 
