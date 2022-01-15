@@ -19,7 +19,7 @@ if submit_button:
 
 
     st.subheader('GenZ Style:')
-    short = shorten(text_input, 4)
+    short = shorten(text_input, 3)
     result = genZ_transfer(short)
     for sent in result.split('\n'):
         st.write(sent)
