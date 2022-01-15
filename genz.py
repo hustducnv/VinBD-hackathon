@@ -1,3 +1,4 @@
+# coding=utf-8
 import re
 import numpy as np
 from underthesea import word_tokenize, sent_tokenize
