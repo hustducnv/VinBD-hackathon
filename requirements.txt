@@ -1,0 +1,3 @@
+Wikipedia-API
+streamlit
+underthesea

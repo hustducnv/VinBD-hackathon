@@ -6,6 +6,11 @@ import underthesea
 import wikipedia as wkp
 wkp.set_lang("vi")
 
+import wikipediaapi
+wiki_wiki = wikipediaapi.Wikipedia('vi')
+
+from check_category import check_category
+
 
 def word_tokenize(sent):
     words = underthesea.word_tokenize(sent)
@@ -42,6 +47,22 @@ def get_wiki_summary(keyword):
     return summary
 
 
+def get_wiki_summary_v2(keyword):
+    summary = ''
+    try:
+        new_keyword = wkp.search(keyword)[0]
+        page_py = wiki_wiki.page(new_keyword)
+        # summary = page_py.summary
+        for cat in page_py.categories.keys():
+            if check_category(cat):
+                # print(cat, ' --- ', new_keyword)
+                summary = page_py.summary
+                break
+    except:
+        summary = ''
+    return summary
+
+
 with open('./data/word_counter_200k.pkl', 'rb') as file:
     COUNTER = pickle.load(file)
 
@@ -49,7 +70,8 @@ with open('./data/word_counter_200k.pkl', 'rb') as file:
 def get_detail(src, counter=COUNTER):
     result = {}
     for keyword in get_keywords(src, counter):
-        result[keyword] = get_wiki_summary(keyword)
+        # result[keyword] = get_wiki_summary(keyword)
+        result[keyword] = get_wiki_summary_v2(keyword)
     return result
 
 

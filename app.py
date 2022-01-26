@@ -4,16 +4,6 @@ from detail import get_detail
 from genz import genZ_transfer
 
 
-black_list = [
-    'tự tin lành mạnh',
-    'hạ bì',
-    'mi mắt',
-    'restless',
-    'trương lực',
-    'rbv',
-    'chuyển hoá'
-]
-
 
 st.title('VinBigData Hackathon')
 st.header('NaN Team')
@@ -42,7 +32,7 @@ if submit_button:
         st.write(sent)
     st.write('---')
     for key, value in get_detail(text_input).items():
-        if value != '' and key not in black_list:
+        if value != '':
             st.markdown('**{}: ** {}'.format(key, value))
             st.write('---')
             
