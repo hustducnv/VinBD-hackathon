@@ -38,7 +38,7 @@ rule = {
     'thế' : (0.75, ['thí']),
     'tinh thần' : (0.5, ['tâm thần ý lộn tinh thần']),
     'bắt đầu' : (0.5, ['pắt đầu']),
-
+    'thôi' : (0.5, ['thui'])
 }
 
 rule_pronoun = {
